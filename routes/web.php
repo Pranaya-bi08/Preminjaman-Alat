@@ -9,6 +9,7 @@ use App\Http\Controllers\PeminjamanController;
 use App\Http\Controllers\PengembalianController;
 use App\Http\Controllers\LogAktivitasController;
 use App\Http\Controllers\PeminjamController;
+use App\Http\Controllers\PetugasController;
 
 route::get('/', function () {
     return redirect()->route('login');
@@ -64,11 +65,21 @@ Route::middleware(['auth'])->group(function() {
    });
 
    Route::middleware(['auth', 'role:petugas'])->group(function () {
-       Route::get('/petugas/dashboard', fn () => view('petugas.dashboard'))->name('petugas.dashboard');
+       Route::get('/petugas/dashboard', [PetugasController::class, 'dashboard'])->name('petugas.dashboard');
+       Route::get('/petugas/persetujuan', [PetugasController::class, 'persetujuan'])->name('petugas.persetujuan.index');
+       Route::post('/petugas/persetujuan/{id}/setujui', [PetugasController::class, 'setujui'])->name('petugas.peminjaman.setujui');
+       Route::post('/petugas/persetujuan/{id}/tolak', [PetugasController::class, 'tolak'])->name('petugas.peminjaman.tolak');
 
-        Route::post('peminjaman/{peminjaman}/setujui', [PeminjamanController::class, 'setujui'])->name('peminjaman.setujui');
-        Route::post('peminjaman/{peminjaman}/tolak', [PeminjamanController::class, 'tolak'])->name('peminjaman.tolak');
-        Route::get('laporan/peminjaman', [PeminjamanController::class, 'laporan'])->name('peminjaman.laporan');
+       Route::get('/petugas/pengembalian', [PetugasController::class, 'pengembalian'])->name('petugas.pengembalian.index');
+       Route::post('/petugas/pengembalian/{id}/selesai', [PetugasController::class, 'prosesPengembalian'])->name('petugas.pengembalian.proses');
+
+       Route::get('/petugas/laporan', [PetugasController::class, 'laporan'])->name('petugas.laporan.index');
+       Route::get('/petugas/laporan/cetak', [PetugasController::class, 'cetakLaporan'])->name('petugas.laporan.cetak');
+
+       // Compatibility routes
+       Route::post('peminjaman/{peminjaman}/setujui', [PetugasController::class, 'setujui'])->name('peminjaman.setujui');
+       Route::post('peminjaman/{peminjaman}/tolak', [PetugasController::class, 'tolak'])->name('peminjaman.tolak');
+       Route::get('laporan/peminjaman', [PetugasController::class, 'laporan'])->name('peminjaman.laporan');
    });
 
    Route::middleware(['auth', 'role:peminjam'])->group(function () {

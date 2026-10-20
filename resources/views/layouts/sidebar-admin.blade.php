@@ -84,26 +84,26 @@
                         <span class="hide-menu">Petugas</span>
                     </li>
 
-                    <li class="sidebar-item">
+                    <li class="sidebar-item {{ request()->routeIs('petugas.dashboard') ? 'selected' : '' }}">
                         <a class="sidebar-link waves-effect waves-dark" href="{{ route('petugas.dashboard') }}">
                             <i class="mdi mdi-gauge"></i>
                             <span class="hide-menu">Dashboard</span>
                         </a>
                     </li>
-                    <li class="sidebar-item">
-                        <a class="sidebar-link waves-effect waves-dark" href="{{ Route::has('persetujuan.index') ? route('persetujuan.index') : route('petugas.dashboard') }}">
+                    <li class="sidebar-item {{ request()->routeIs('petugas.persetujuan.*') ? 'selected' : '' }}">
+                        <a class="sidebar-link waves-effect waves-dark" href="{{ route('petugas.persetujuan.index') }}">
                             <i class="mdi mdi-check-circle"></i>
                             <span class="hide-menu">Menyetujui Peminjaman</span>
                         </a>
                     </li>
-                    <li class="sidebar-item">
-                        <a class="sidebar-link waves-effect waves-dark" href="{{ Route::has('pengembalian.index') ? route('pengembalian.index') : route('petugas.dashboard') }}">
+                    <li class="sidebar-item {{ request()->routeIs('petugas.pengembalian.*') ? 'selected' : '' }}">
+                        <a class="sidebar-link waves-effect waves-dark" href="{{ route('petugas.pengembalian.index') }}">
                             <i class="mdi mdi-eye"></i>
                             <span class="hide-menu">Memantau Pengembalian</span>
                         </a>
                     </li>
-                    <li class="sidebar-item">
-                        <a class="sidebar-link waves-effect waves-dark" href="{{ Route::has('peminjaman.laporan') ? route('peminjaman.laporan') : '#' }}">
+                    <li class="sidebar-item {{ request()->routeIs('petugas.laporan.*') ? 'selected' : '' }}">
+                        <a class="sidebar-link waves-effect waves-dark" href="{{ route('petugas.laporan.index') }}">
                             <i class="mdi mdi-printer"></i>
                             <span class="hide-menu">Mencetak Laporan</span>
                         </a>
