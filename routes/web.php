@@ -8,6 +8,7 @@ use App\Http\Controllers\KategoriController;
 use App\Http\Controllers\PeminjamanController;
 use App\Http\Controllers\PengembalianController;
 use App\Http\Controllers\LogAktivitasController;
+use App\Http\Controllers\PeminjamController;
 
 route::get('/', function () {
     return redirect()->route('login');
@@ -71,9 +72,15 @@ Route::middleware(['auth'])->group(function() {
    });
 
    Route::middleware(['auth', 'role:peminjam'])->group(function () {
-       Route::get('/peminjam/dashboard', [AlatController::class, 'catalog'])->name('peminjam.dashboard');
-       Route::get('peminjaman/create', [PeminjamanController::class, 'create'])->name('peminjaman.create');
-       Route::post('peminjaman', [PeminjamanController::class, 'store'])->name('peminjaman.store');    
-     
+       Route::get('/peminjam/dashboard', [PeminjamController::class, 'dashboard'])->name('peminjam.dashboard');
+       Route::get('/peminjam/alat', [PeminjamController::class, 'alat'])->name('peminjam.alat.index');
+       Route::get('/peminjam/pengajuan', [PeminjamController::class, 'pengajuan'])->name('peminjam.pengajuan.index');
+       Route::get('/peminjam/pengembalian', [PeminjamController::class, 'pengembalian'])->name('peminjam.pengembalian.index');
 
+       Route::post('/peminjam/pengajuan', [PeminjamController::class, 'storePengajuan'])->name('peminjam.pengajuan.store');
+       Route::post('/peminjam/pengembalian/{id}', [PeminjamController::class, 'kembalikan'])->name('peminjam.kembalikan');
+
+       // Compatibility / aliases
+       Route::get('peminjaman/create', [PeminjamController::class, 'alat'])->name('peminjaman.create');
+       Route::post('peminjaman', [PeminjamController::class, 'storePengajuan'])->name('peminjaman.store');
    });

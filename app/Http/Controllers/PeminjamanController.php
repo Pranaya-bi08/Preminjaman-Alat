@@ -4,7 +4,11 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\Peminjaman;
+use App\Models\Alat;
+use App\Models\User;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\ValidationException;
 
 class PeminjamanController extends Controller
 {
@@ -39,7 +43,7 @@ class PeminjamanController extends Controller
         $user = Auth::user();
  
         $data = $request->validate([
-            'id_alat'         => ['required', 'exists:alat,id'],
+            'id_alat'         => ['required', 'exists:alats,id'],
             'jumlah'          => ['required', 'integer', 'min:1'],
             'tanggal_kembali' => ['required', 'date', 'after_or_equal:today'],
             'keperluan'       => ['nullable', 'string', 'max:500'],
@@ -58,6 +62,11 @@ class PeminjamanController extends Controller
 
         Peminjaman::create($data);
  
+        if (Auth::user()->role === 'peminjam') {
+            return redirect()->route('peminjam.dashboard')
+                ->with('success', 'Pengajuan peminjaman berhasil dikirim. Menunggu persetujuan petugas.');
+        }
+
         return redirect()->route('peminjaman.index')
             ->with('success', 'Pengajuan peminjaman berhasil dikirim.');
     }

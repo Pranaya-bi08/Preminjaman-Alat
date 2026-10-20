@@ -91,19 +91,19 @@
                         </a>
                     </li>
                     <li class="sidebar-item">
-                        <a class="sidebar-link waves-effect waves-dark" href="{{ route('persetujuan.index') }}">
+                        <a class="sidebar-link waves-effect waves-dark" href="{{ Route::has('persetujuan.index') ? route('persetujuan.index') : route('petugas.dashboard') }}">
                             <i class="mdi mdi-check-circle"></i>
                             <span class="hide-menu">Menyetujui Peminjaman</span>
                         </a>
                     </li>
                     <li class="sidebar-item">
-                        <a class="sidebar-link waves-effect waves-dark" href="{{ route('pengembalian.index') }}">
+                        <a class="sidebar-link waves-effect waves-dark" href="{{ Route::has('pengembalian.index') ? route('pengembalian.index') : route('petugas.dashboard') }}">
                             <i class="mdi mdi-eye"></i>
                             <span class="hide-menu">Memantau Pengembalian</span>
                         </a>
                     </li>
                     <li class="sidebar-item">
-                        <a class="sidebar-link waves-effect waves-dark" href="{{ route('laporan.index') }}">
+                        <a class="sidebar-link waves-effect waves-dark" href="{{ Route::has('peminjaman.laporan') ? route('peminjaman.laporan') : '#' }}">
                             <i class="mdi mdi-printer"></i>
                             <span class="hide-menu">Mencetak Laporan</span>
                         </a>
@@ -117,28 +117,28 @@
                         <span class="hide-menu">Peminjam</span>
                     </li>
 
-                    <li class="sidebar-item">
+                    <li class="sidebar-item {{ request()->routeIs('peminjam.dashboard') ? 'selected' : '' }}">
                         <a class="sidebar-link waves-effect waves-dark" href="{{ route('peminjam.dashboard') }}">
                             <i class="mdi mdi-gauge"></i>
                             <span class="hide-menu">Dashboard</span>
                         </a>
                     </li>
-                    <li class="sidebar-item">
-                        <a class="sidebar-link waves-effect waves-dark" href="#">
+                    <li class="sidebar-item {{ request()->routeIs('peminjam.alat.*') ? 'selected' : '' }}">
+                        <a class="sidebar-link waves-effect waves-dark" href="{{ route('peminjam.alat.index') }}">
                             <i class="mdi mdi-view-list"></i>
-                            <span class="hide-menu">Daftar Alat</span>
+                            <span class="hide-menu">Daftar & Kategori Alat</span>
                         </a>
                     </li>
-                    <li class="sidebar-item">
-                        <a class="sidebar-link waves-effect waves-dark" href="{{ route('pengajuan.index') }}">
+                    <li class="sidebar-item {{ request()->routeIs('peminjam.pengajuan.*') ? 'selected' : '' }}">
+                        <a class="sidebar-link waves-effect waves-dark" href="{{ route('peminjam.pengajuan.index') }}">
                             <i class="mdi mdi-send"></i>
-                            <span class="hide-menu">Ajukan Peminjaman</span>
+                            <span class="hide-menu">Pengajuan Pinjam</span>
                         </a>
                     </li>
-                    <li class="sidebar-item">
-                        <a class="sidebar-link waves-effect waves-dark" href="{{ route('pengembalian.index') }}">
+                    <li class="sidebar-item {{ request()->routeIs('peminjam.pengembalian.*') ? 'selected' : '' }}">
+                        <a class="sidebar-link waves-effect waves-dark" href="{{ route('peminjam.pengembalian.index') }}">
                             <i class="mdi mdi-backup-restore"></i>
-                            <span class="hide-menu">Kembalikan Alat</span>
+                            <span class="hide-menu">Pengembalian Alat</span>
                         </a>
                     </li>
                 @endif
