@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\LogAktivitas;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -32,6 +33,16 @@ class LoginController extends Controller
         if (Auth::attempt($credentials, $request->boolean('remember'))) {
             $request->session()->regenerate();
 
+            $user = Auth::user();
+            LogAktivitas::create([
+                'id_user' => $user->id,
+                'nama' => $user->name,
+                'role' => $user->role,
+                'aktivitas' => 'Login ke sistem',
+                'keterangan' => 'Login berhasil',
+                'tanggal' => now(),
+            ]);
+
             return $this->redirectByRole()->with('auth_success', 'Login berhasil.');
         }
 
@@ -43,6 +54,19 @@ class LoginController extends Controller
     // Logout (route: logout, method POST)
     public function actionLogout(Request $request)
     {
+        $user = Auth::user();
+
+        if ($user) {
+            LogAktivitas::create([
+                'id_user' => $user->id,
+                'nama' => $user->name,
+                'role' => $user->role,
+                'aktivitas' => 'Logout dari sistem',
+                'keterangan' => 'Logout berhasil',
+                'tanggal' => now(),
+            ]);
+        }
+
         Auth::logout();
 
         $request->session()->invalidate();

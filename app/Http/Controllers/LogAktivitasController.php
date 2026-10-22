@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\LogAktivitas;
 use Illuminate\Http\Request;
 
 class LogAktivitasController extends Controller
@@ -11,7 +12,12 @@ class LogAktivitasController extends Controller
      */
     public function index()
     {
+        $logAktivitas = LogAktivitas::query()
+            ->orderByDesc('tanggal')
+            ->orderByDesc('id')
+            ->paginate(15);
 
+        return view('admin.log-aktivitas.index', compact('logAktivitas'));
     }
 
     /**
