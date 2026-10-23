@@ -155,10 +155,17 @@ class PeminjamController extends Controller
      */
     public function storePengajuan(Request $request)
     {
+        $maxTanggalKembali = Carbon::today()->addDays(5)->toDateString();
+
         $data = $request->validate([
             'id_alat'         => ['required', 'exists:alats,id'],
             'jumlah'          => ['required', 'integer', 'min:1'],
-            'tanggal_kembali' => ['required', 'date', 'after_or_equal:today'],
+            'tanggal_kembali' => ['required', 'date', 'after_or_equal:today', function ($attribute, $value, $fail) use ($maxTanggalKembali) {
+                $selected = Carbon::parse($value)->toDateString();
+                if (Carbon::parse($selected)->gt(Carbon::parse($maxTanggalKembali))) {
+                    $fail('Batas pengembalian maksimal 5 hari sejak tanggal pengajuan.');
+                }
+            }],
             'keperluan'       => ['nullable', 'string', 'max:500'],
         ], [
             'id_alat.required'         => 'Silakan pilih alat yang ingin dipinjam.',

@@ -335,10 +335,10 @@
                         </div>
                         <div class="col-md-7 mb-3">
                             <label for="modal_tanggal_kembali" class="font-weight-bold text-dark" style="font-size: 13px;">
-                                Rencana Batas Kembali <span class="text-danger">*</span>
+                                Tanggal pengembalian<span class="text-danger">*</span>
                             </label>
-                            <input type="date" name="tanggal_kembali" id="modal_tanggal_kembali" class="form-control" min="{{ date('Y-m-d') }}" value="{{ old('tanggal_kembali', date('Y-m-d', strtotime('+3 days'))) }}" required style="border-radius: 6px; height: 42px;">
-                            <small class="text-muted">Tanggal batas pengembalian</small>
+                            <input type="date" name="tanggal_kembali" id="modal_tanggal_kembali" class="form-control" min="{{ date('Y-m-d') }}" max="{{ date('Y-m-d', strtotime('+5 days')) }}" value="{{ old('tanggal_kembali', date('Y-m-d', strtotime('+5 days'))) }}" required style="border-radius: 6px; height: 42px;">
+                            <small class="text-muted">Maksimal 5 hari sejak pengajuan alat</small>
                         </div>
                     </div>
 
@@ -378,6 +378,20 @@
                 "info": "Menampilkan _START_ - _END_ dari _TOTAL_ pengajuan",
                 "paginate": { "previous": "Sebelumnya", "next": "Selanjutnya" },
                 "emptyTable": "Belum ada data pengajuan"
+            }
+        });
+
+        var maxDate = new Date();
+        maxDate.setDate(maxDate.getDate() + 5);
+        var maxDateString = maxDate.getFullYear() + '-' +
+            String(maxDate.getMonth() + 1).padStart(2, '0') + '-' +
+            String(maxDate.getDate()).padStart(2, '0');
+
+        $('#modal_tanggal_kembali').attr('max', maxDateString);
+
+        $('#modal_tanggal_kembali').on('change', function () {
+            if ($(this).val() > maxDateString) {
+                $(this).val(maxDateString);
             }
         });
 

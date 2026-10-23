@@ -400,7 +400,7 @@
                                     </td>
                                     <td class="text-center font-weight-bold">{{ $item->stok }}</td>
                                     <td class="text-center">
-                                        <button type="button" 
+                                        <button type="button"
                                                 class="btn btn-sm btn-outline-primary px-2 py-1 font-weight-bold btn-pinjam-cepat"
                                                 data-id="{{ $item->id }}"
                                                 style="border-radius: 4px; font-size: 12px;">

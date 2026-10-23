@@ -100,40 +100,43 @@ class PetugasController extends Controller
     /**
      * Proses Setujui Peminjaman
      */
-    public function setujui($id)
-    {
-        $peminjaman = Peminjaman::with('alat')->findOrFail($id);
+    public function setujui(Request $request, $id)
+   {
+    $maxTanggalKembali = Carbon::today()->addDays(5)->toDateString();
 
-        if ($peminjaman->status !== Peminjaman::STATUS_MENUNGGU) {
-            return back()->with('error', 'Pengajuan ini sudah pernah diproses sebelumnya.');
-        }
+    $request->validate([
+        'tanggal_kembali' => ['required', 'date', 'after_or_equal:today', function ($attribute, $value, $fail) use ($maxTanggalKembali) {
+            $selected = Carbon::parse($value)->toDateString();
+            if (Carbon::parse($selected)->gt(Carbon::parse($maxTanggalKembali))) {
+                $fail('Batas pengembalian maksimal 5 hari sejak tanggal pengajuan.');
+            }
+        }],
+    ], [
+        'tanggal_kembali.required' => 'Batas pengembalian wajib diisi.',
+        'tanggal_kembali.after_or_equal' => 'Batas pengembalian tidak boleh sebelum hari ini.',
+    ]);
 
-        try {
-            DB::transaction(function () use ($peminjaman) {
-                $alat = Alat::lockForUpdate()->findOrFail($peminjaman->id_alat);
+    $peminjaman = Peminjaman::with('alat')->findOrFail($id);
 
-                if ($peminjaman->jumlah > $alat->stok) {
-                    throw new \RuntimeException(
-                        "Stok {$alat->nama_alat} tidak mencukupi (tersisa {$alat->stok} unit, pengajuan butuh {$peminjaman->jumlah} unit)."
-                    );
-                }
-
-                // Kurangi stok alat
-                $alat->decrement('stok', $peminjaman->jumlah);
-
-                // Update status peminjaman
-                $peminjaman->update([
-                    'status'     => Peminjaman::STATUS_DISETUJUI,
-                    'id_petugas' => Auth::id(),
-                ]);
-            });
-        } catch (\RuntimeException $e) {
-            return back()->with('error', $e->getMessage());
-        }
-
-        return back()->with('success', "Peminjaman '{$peminjaman->alat?->nama_alat}' oleh {$peminjaman->peminjam?->name} berhasil disetujui. Stok alat telah dikurangi.");
+    if ($peminjaman->status !== 'menunggu') {
+        return back()->with('error', 'Peminjaman ini sudah diproses.');
     }
 
+    if ($peminjaman->alat->stok < $peminjaman->jumlah) {
+        return back()->with('error', 'Stok alat tidak mencukupi.');
+    }
+
+    DB::transaction(function () use ($peminjaman, $request) {
+        $peminjaman->alat->decrement('stok', $peminjaman->jumlah);
+        $peminjaman->update([
+            'status' => 'disetujui',
+            'tanggal_kembali' => $request->tanggal_kembali,
+        ]);
+    });
+
+    return back()->with('success', 'Peminjaman disetujui dengan batas kembali ' .
+        \Carbon\Carbon::parse($request->tanggal_kembali)->format('d-m-Y') . '.');
+}
     /**
      * Proses Tolak Peminjaman
      */

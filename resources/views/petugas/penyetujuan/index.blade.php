@@ -129,7 +129,7 @@
     }
 </style>
 
-{{-- ================= ALERT NOTIFIKASI ================= --}}
+
 @if (session('success'))
     <div class="alert alert-success alert-dismissible fade show" role="alert" style="border-radius: 6px; border-left: 4px solid #16a34a;">
         <div class="d-flex align-items-center">
@@ -158,7 +158,6 @@
     </div>
 @endif
 
-{{-- ================= CLEAN HEADER ================= --}}
 <div class="clean-header">
     <div class="d-flex justify-content-between align-items-center flex-wrap">
         <div>
@@ -184,7 +183,7 @@
     </div>
 </div>
 
-{{-- ================= TAB FILTER & TABEL PERSETUJUAN ================= --}}
+
 <div class="clean-card">
     <div class="card-header d-flex flex-wrap justify-content-between align-items-center">
         <div>
@@ -209,7 +208,7 @@
     </div>
 
     <div class="card-body p-4">
-        {{-- Filter Status Tabs --}}
+
         <div class="mb-3">
             <a href="{{ route('petugas.persetujuan.index') }}" class="filter-pill {{ !request('status') ? 'active' : '' }}">
                 Semua Permohonan <span class="pill-number">{{ $counts['semua'] }}</span>
@@ -290,15 +289,18 @@
                             </td>
                             <td class="text-center">
                                 @if ($item->status === 'menunggu')
-                                    <form action="{{ route('petugas.peminjaman.setujui', $item->id) }}" method="POST" class="d-inline form-setujui-row">
+                                    <form action="{{ route('petugas.peminjaman.setujui', $item->id) }}" method="POST" class="d-inline form-setujui-row" data-tanggal="{{ \Carbon\Carbon::parse($item->tanggal_kembali)->format('Y-m-d') }}"
+                                        data-alat="{{ $item->alat->nama_alat ?? 'Alat' }}"
+                                        data-peminjam="{{ $item->peminjam->name ?? 'Peminjam' }}">
                                         @csrf
+                                        <input type="hidden" name="tanggal_kembali" value="">
                                         <button type="submit" class="btn btn-sm btn-success px-2 py-1 font-weight-bold" title="Setujui Peminjaman" style="border-radius: 4px;">
                                             <i class="mdi mdi-check mr-1"></i> Setujui
                                         </button>
                                     </form>
-                                    <button type="button" class="btn btn-sm btn-outline-danger px-2 py-1 font-weight-bold btn-tolak-row" 
-                                            data-id="{{ $item->id }}" 
-                                            data-peminjam="{{ $item->peminjam->name ?? 'Peminjam' }}" 
+                                    <button type="button" class="btn btn-sm btn-outline-danger px-2 py-1 font-weight-bold btn-tolak-row"
+                                            data-id="{{ $item->id }}"
+                                            data-peminjam="{{ $item->peminjam->name ?? 'Peminjam' }}"
                                             data-alat="{{ $item->alat->nama_alat ?? 'Alat' }}"
                                             title="Tolak Peminjaman" style="border-radius: 4px;">
                                         <i class="mdi mdi-close mr-1"></i> Tolak
@@ -379,24 +381,76 @@
         });
 
         // Konfirmasi Setujui
-        $('.form-setujui-row').on('submit', function (e) {
+        $(document).on('submit', '.form-setujui-row', function (e) {
             e.preventDefault();
             var form = this;
+            var now = new Date();
+            var hariIni = now.getFullYear() + '-' +
+                String(now.getMonth() + 1).padStart(2, '0') + '-' +
+                String(now.getDate()).padStart(2, '0');
+            var tanggalDefault = String($(form).data('tanggal') || '').trim();
+            if (!tanggalDefault) {
+                tanggalDefault = hariIni;
+            }
+
+            var maxDate = new Date();
+            maxDate.setDate(maxDate.getDate() + 5);
+            var maxTanggal = maxDate.getFullYear() + '-' +
+                String(maxDate.getMonth() + 1).padStart(2, '0') + '-' +
+                String(maxDate.getDate()).padStart(2, '0');
+
+            if (tanggalDefault > maxTanggal) {
+                tanggalDefault = maxTanggal;
+            }
+
+            var kirimForm = function () {
+                HTMLFormElement.prototype.submit.call(form);
+            };
+
             if (typeof Swal !== 'undefined') {
                 Swal.fire({
                     title: 'Setujui Peminjaman?',
-                    text: 'Stok alat akan otomatis berkurang sesuai jumlah yang diminta.',
+                    html: '<div class="text-left">' +
+                        '<p class="mb-3 text-muted">Peminjam: <strong>' + $(form).data('peminjam') + '</strong><br>Alat: <strong>' + $(form).data('alat') + '</strong></p>' +
+                        '<label for="swal-tgl" class="d-block mb-2 font-weight-bold text-dark">Batas pengembalian</label>' +
+                        '<input type="date" id="swal-tgl" class="form-control" value="' + tanggalDefault + '" min="' + hariIni + '" max="' + maxTanggal + '" required>' +
+                        '</div>',
                     icon: 'question',
                     showCancelButton: true,
                     confirmButtonColor: '#16a34a',
                     cancelButtonColor: '#64748b',
                     confirmButtonText: 'Ya, Setujui',
-                    cancelButtonText: 'Batal'
-                }).then((res) => {
-                    if (res.isConfirmed) form.submit();
+                    cancelButtonText: 'Batal',
+                    preConfirm: function () {
+                        var tgl = String($('#swal-tgl').val() || '').trim();
+                        if (!tgl) {
+                            Swal.showValidationMessage('Batas pengembalian wajib diisi.');
+                            return false;
+                        }
+                        if (tgl < hariIni) {
+                            Swal.showValidationMessage('Tanggal tidak boleh sebelum hari ini.');
+                            return false;
+                        }
+                        if (tgl > maxTanggal) {
+                            Swal.showValidationMessage('Batas pengembalian maksimal 5 hari sejak hari ini.');
+                            return false;
+                        }
+                        return tgl;
+                    }
+                }).then(function (res) {
+                    var submittedValue = res && (res.value !== undefined && res.value !== null && res.value !== false && res.value !== '') ? res.value : null;
+                    var isConfirmed = res && (res.isConfirmed === true || res.value === true || submittedValue !== null);
+
+                    if (isConfirmed && submittedValue) {
+                        $(form).find('input[name="tanggal_kembali"]').val(String(submittedValue).trim());
+                        kirimForm();
+                    }
                 });
             } else {
-                if (confirm('Setujui peminjaman ini? Stok alat akan berkurang.')) form.submit();
+                $(form).find('input[name="tanggal_kembali"]').val(tanggalDefault);
+                if (confirm('Setujui peminjaman ini? Stok alat akan berkurang.')) {
+                    kirimForm();
+                }
             }
         });
 
