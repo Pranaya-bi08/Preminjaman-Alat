@@ -21,10 +21,7 @@ class PeminjamController extends Controller
         $user = Auth::user();
 
         // Data pengajuan & pinjaman peminjam
-        $pengajuanList = Peminjaman::where('id_user', $user->id)
-            ->with(['alat.kategori', 'petugas'])
-            ->latest()
-            ->get();
+        $pengajuanList = Peminjaman::where('id_user', $user->id)->with(['alat.kategori', 'petugas'])->latest()->get();
 
         $pinjamanAktif = $pengajuanList->filter(function ($item) {
             return $item->status === Peminjaman::STATUS_DISETUJUI && !$item->isSudahDikembalikan();
@@ -132,10 +129,7 @@ class PeminjamController extends Controller
     {
         $user = Auth::user();
 
-        $allUserLoans = Peminjaman::where('id_user', $user->id)
-            ->with(['alat.kategori', 'petugas'])
-            ->latest()
-            ->get();
+        $allUserLoans = Peminjaman::where('id_user', $user->id)->with(['alat.kategori', 'petugas'])->latest()->get();
 
         // Pinjaman aktif yang harus dikembalikan
         $pinjamanAktif = $allUserLoans->filter(function ($item) {
@@ -155,25 +149,18 @@ class PeminjamController extends Controller
      */
     public function storePengajuan(Request $request)
     {
-        $maxTanggalKembali = Carbon::today()->addDays(5)->toDateString();
-
         $data = $request->validate([
-            'id_alat'         => ['required', 'exists:alats,id'],
-            'jumlah'          => ['required', 'integer', 'min:1'],
-            'tanggal_kembali' => ['required', 'date', 'after_or_equal:today', function ($attribute, $value, $fail) use ($maxTanggalKembali) {
-                $selected = Carbon::parse($value)->toDateString();
-                if (Carbon::parse($selected)->gt(Carbon::parse($maxTanggalKembali))) {
-                    $fail('Batas pengembalian maksimal 5 hari sejak tanggal pengajuan.');
-                }
-            }],
+            'id_alat'           => ['required', 'exists:alats,id'],
+            'jumlah'            => ['required', 'integer', 'min:1'],
+            'tanggal_pengambilan' => ['required', 'date', 'after_or_equal:today'],
             'keperluan'       => ['nullable', 'string', 'max:500'],
         ], [
             'id_alat.required'         => 'Silakan pilih alat yang ingin dipinjam.',
             'id_alat.exists'           => 'Alat yang dipilih tidak valid.',
             'jumlah.required'          => 'Jumlah unit alat wajib diisi.',
             'jumlah.min'               => 'Jumlah unit minimal 1.',
-            'tanggal_kembali.required' => 'Tanggal rencana pengembalian wajib diisi.',
-            'tanggal_kembali.after_or_equal' => 'Tanggal kembali minimal hari ini atau setelahnya.',
+            'tanggal_pengambilan.required' => 'Tanggal pengambilan alat wajib diisi.',
+            'tanggal_pengambilan.after_or_equal' => 'Tanggal pengambilan tidak boleh sebelum hari ini.',
         ]);
 
         $alat = Alat::findOrFail($data['id_alat']);
@@ -187,7 +174,8 @@ class PeminjamController extends Controller
             'id_alat'           => $data['id_alat'],
             'jumlah'            => $data['jumlah'],
             'tanggal_pengajuan' => now()->toDateString(),
-            'tanggal_kembali'   => $data['tanggal_kembali'],
+            'tanggal_pengambilan' => $data['tanggal_pengambilan'],
+            'tanggal_kembali'   => null,
             'keperluan'         => $data['keperluan'] ?? null,
             'status'            => Peminjaman::STATUS_MENUNGGU,
         ]);
@@ -202,10 +190,7 @@ class PeminjamController extends Controller
     public function kembalikan(Request $request, $id)
     {
         $user = Auth::user();
-        $peminjaman = Peminjaman::where('id', $id)
-            ->where('id_user', $user->id)
-            ->with('alat')
-            ->firstOrFail();
+        $peminjaman = Peminjaman::where('id', $id)->where('id_user', $user->id)->with('alat')->firstOrFail();
 
         if ($peminjaman->status !== Peminjaman::STATUS_DISETUJUI) {
             return back()->with('error', 'Peminjaman ini belum disetujui atau sudah selesai.');
@@ -242,7 +227,6 @@ class PeminjamController extends Controller
             $pesan .= " (Status: Terlambat dari batas pengembalian {$peminjaman->tanggal_kembali})";
         }
 
-        return redirect()->route('peminjam.pengembalian.index')
-            ->with('success', $pesan);
+        return redirect()->route('peminjam.pengembalian.index')->with('success', $pesan);
     }
 }

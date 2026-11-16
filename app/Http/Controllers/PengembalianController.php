@@ -10,9 +10,7 @@ class PengembalianController extends Controller
 {
     public function index()
     {
-        $pengembalian = Pengembalian::with(['alat.kategori', 'kategori'])
-            ->latest()
-            ->get();
+        $pengembalian = Pengembalian::with(['alat.kategori', 'kategori'])->latest()->get();
 
         return view('admin.pengembalian.index', compact('pengembalian'));
     }
@@ -57,15 +55,13 @@ class PengembalianController extends Controller
         $data['id_kategori'] = $alat->id_kategori;
         $pengembalian->update($data);
 
-        return redirect()->route('pengembalian.index')
-            ->with('success', 'Data pengembalian berhasil diperbarui.');
+        return redirect()->route('pengembalian.index')->with('success', 'Data pengembalian berhasil diperbarui.');
     }
 
     public function destroy(Pengembalian $pengembalian)
     {
         $pengembalian->delete();
 
-        return redirect()->route('pengembalian.index')
-            ->with('success', 'Data pengembalian berhasil dihapus.');
+        return redirect()->route('pengembalian.index')->with('success', 'Data pengembalian berhasil dihapus.');
     }
 }

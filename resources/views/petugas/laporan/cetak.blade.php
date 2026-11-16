@@ -213,7 +213,7 @@
                             <small style="color: #64748b;">({{ $item->alat->kategori->nama_kategori ?? 'Umum' }})</small>
                         </td>
                         <td class="text-center">{{ $item->jumlah }}</td>
-                        <td>{{ \Carbon\Carbon::parse($item->tanggal_kembali)->format('d/m/Y') }}</td>
+                        <td>{{ $item->tanggal_kembali ? \Carbon\Carbon::parse($item->tanggal_kembali)->format('d/m/Y') : '-' }}</td>
                         <td class="text-center">
                             @if ($item->isSudahDikembalikan())
                                 Dikembalikan

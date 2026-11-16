@@ -18,6 +18,7 @@ class Peminjaman extends Model
         'id_petugas',
         'jumlah',
         'tanggal_pengajuan',
+        'tanggal_pengambilan',
         'tanggal_kembali',
         'keperluan',
         'status',
@@ -54,7 +55,7 @@ class Peminjaman extends Model
 
     public function isTerlambat(): bool
     {
-        if ($this->status !== self::STATUS_DISETUJUI || $this->isSudahDikembalikan()) {
+        if ($this->status !== self::STATUS_DISETUJUI || $this->isSudahDikembalikan() || !$this->tanggal_kembali) {
             return false;
         }
 

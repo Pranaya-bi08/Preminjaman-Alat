@@ -81,7 +81,7 @@
                     <span class="text-muted">Menunggu</span>
                     <span class="badge badge-primary px-2 py-1">{{ $menunggu }}</span>
                 </div>
-                <div class="progress" style="height: 8px; background: #eef2f7;">
+                <div class="progress">
                     <div class="progress-bar bg-primary" role="progressbar" style="width: {{ $totalPeminjam > 0 ? ($menunggu / max($totalPeminjam,1)) * 100 : 0 }}%;" aria-valuenow="{{ $menunggu }}" aria-valuemin="0" aria-valuemax="{{ max($totalPeminjam,1) }}"></div>
                 </div>
             </div>
@@ -95,7 +95,7 @@
                     <span class="text-muted">Disetujui</span>
                     <span class="badge badge-success px-2 py-1">{{ $disetujui }}</span>
                 </div>
-                <div class="progress" style="height: 8px; background: #eef2f7;">
+                <div class="progress">
                     <div class="progress-bar bg-success" role="progressbar" style="width: {{ $totalPeminjam > 0 ? ($disetujui / max($totalPeminjam,1)) * 100 : 0 }}%;" aria-valuenow="{{ $disetujui }}" aria-valuemin="0" aria-valuemax="{{ max($totalPeminjam,1) }}"></div>
                 </div>
             </div>
@@ -109,7 +109,7 @@
                     <span class="text-muted">Ditolak</span>
                     <span class="badge badge-danger px-2 py-1">{{ $ditolak }}</span>
                 </div>
-                <div class="progress" style="height: 8px; background: #eef2f7;">
+                <div class="progress">
                     <div class="progress-bar bg-danger" role="progressbar" style="width: {{ $totalPeminjam > 0 ? ($ditolak / max($totalPeminjam,1)) * 100 : 0 }}%;" aria-valuenow="{{ $ditolak }}" aria-valuemin="0" aria-valuemax="{{ max($totalPeminjam,1) }}"></div>
                 </div>
             </div>
@@ -123,7 +123,7 @@
                     <span class="text-muted">Kategori</span>
                     <span class="badge badge-warning text-white px-2 py-1">{{ $totalKategori }}</span>
                 </div>
-                <div class="progress" style="height: 8px; background: #eef2f7;">
+                <div class="progress">
                     <div class="progress-bar bg-warning" role="progressbar" style="width: {{ $totalKategori > 0 ? ($totalKategori / max($totalKategori,1)) * 100 : 0 }}%;" aria-valuenow="{{ $totalKategori }}" aria-valuemin="0" aria-valuemax="{{ max($totalKategori,1) }}"></div>
                 </div>
             </div>
@@ -159,7 +159,7 @@
                                     <td>{{ $item->peminjam->name ?? 'User' }}</td>
                                     <td>{{ $item->alat->nama_alat ?? '-' }}</td>
                                     <td>{{ $item->jumlah }}</td>
-                                    <td>{{ \Carbon\Carbon::parse($item->tanggal_kembali)->format('d-m-Y') }}</td>
+                                    <td>{{ $item->tanggal_kembali ? \Carbon\Carbon::parse($item->tanggal_kembali)->format('d-m-Y') : '-' }}</td>
                                     <td>
                                         @if ($item->status === 'menunggu')
                                             <span class="badge badge-warning text-white">Menunggu</span>
