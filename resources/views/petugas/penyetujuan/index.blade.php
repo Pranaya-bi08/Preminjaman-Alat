@@ -70,11 +70,7 @@
                     <input type="hidden" name="status" value="{{ request('status') }}">
                 @endif
                 <div class="input-group">
-                    <input type="text" name="search" class="form-control" placeholder="Cari peminjam / alat..." value="{{ request('search') }}">
                     <div class="input-group-append">
-                        <button class="btn btn-outline-secondary" type="submit">
-                            <i class="mdi mdi-magnify"></i>
-                        </button>
                     </div>
                 </div>
             </form>

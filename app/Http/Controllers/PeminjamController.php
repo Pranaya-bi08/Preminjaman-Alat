@@ -91,8 +91,7 @@ class PeminjamController extends Controller
     {
         $user = Auth::user();
 
-        $query = Peminjaman::where('id_user', $user->id)
-            ->with(['alat.kategori', 'petugas']);
+        $query = Peminjaman::where('id_user', $user->id)->with(['alat.kategori', 'petugas']);
 
         if ($request->filled('status')) {
             if ($request->status === 'dikembalikan') {
