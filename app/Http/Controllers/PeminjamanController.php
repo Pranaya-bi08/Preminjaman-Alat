@@ -32,7 +32,7 @@ class PeminjamanController extends Controller
     {
         $alat = Alat::with('kategori')->where('stok', '>', 0)->orderBy('nama_alat')->get();
 
-        return view('peminjaman.create', compact('alat', 'peminjam'));
+        return view('admin.peminjaman.create', compact('alat'));
     }
 
     /**
@@ -76,7 +76,7 @@ class PeminjamanController extends Controller
         $this->authorizeAkses($peminjaman);
         $peminjaman->load(['peminjam', 'petugas', 'alat.kategori']);
  
-        return view('peminjaman.show', compact('peminjaman'));
+        return view('admin.peminjaman.show', compact('peminjaman'));
     }
  
     /** Admin */
@@ -85,18 +85,18 @@ class PeminjamanController extends Controller
         $alat      = Alat::orderBy('nama_alat')->get();
         $peminjams = User::where('role', 'peminjam')->orderBy('name')->get();
  
-        return view('peminjaman.edit', compact('peminjaman', 'alat', 'peminjams'));
+        return view('admin.peminjaman.edit', compact('peminjaman', 'alat', 'peminjams'));
     }
  
     /** Admin */
     public function update(Request $request, Peminjaman $peminjaman)
     {
         $data = $request->validate([
-            'user_id'           => ['required', 'exists:users,id'],
-            'alat_id'           => ['required', 'exists:alat,id'],
+            'id_user'           => ['required', 'exists:users,id'],
+            'id_alat'           => ['required', 'exists:alats,id'],
             'jumlah'            => ['required', 'integer', 'min:1'],
             'tanggal_pengajuan' => ['required', 'date'],
-            'tanggal_kembali'   => ['required', 'date', 'after_or_equal:tanggal_pengajuan'],
+            'tanggal_kembali'   => ['nullable', 'date', 'after_or_equal:tanggal_pengajuan'],
             'keperluan'         => ['nullable', 'string', 'max:500'],
             'status'            => ['required', 'in:menunggu,disetujui,ditolak'],
             'catatan'           => ['nullable', 'string', 'max:500'],
@@ -112,12 +112,12 @@ class PeminjamanController extends Controller
     public function destroy(Peminjaman $peminjaman)
     {
         DB::transaction(function () use ($peminjaman) {
-            if ($peminjaman->status === Peminjaman::STATUS_DISETUJUI) {
+            if ($peminjaman->status === Peminjaman::STATUS_DISETUJUI && !$peminjaman->isSudahDikembalikan()) {
                 $peminjaman->alat()->increment('stok', $peminjaman->jumlah);
             }
             $peminjaman->delete();
         });
- 
+
         return redirect()->route('peminjaman.index')
             ->with('success', 'Data peminjaman berhasil dihapus.');
     }
@@ -134,7 +134,7 @@ class PeminjamanController extends Controller
  
         try {
             DB::transaction(function () use ($peminjaman) {
-                $alat = Alat::lockForUpdate()->findOrFail($peminjaman->alat_id);
+                $alat = Alat::lockForUpdate()->findOrFail($peminjaman->id_alat);
  
                 if ($peminjaman->jumlah > $alat->stok) {
                     throw new \RuntimeException(
@@ -146,7 +146,7 @@ class PeminjamanController extends Controller
  
                 $peminjaman->update([
                     'status'     => Peminjaman::STATUS_DISETUJUI,
-                    'petugas_id' => Auth::id(),
+                    'id_petugas' => Auth::id(),
                 ]);
             });
         } catch (\RuntimeException $e) {
@@ -166,7 +166,7 @@ class PeminjamanController extends Controller
  
         $peminjaman->update([
             'status'     => Peminjaman::STATUS_DITOLAK,
-            'petugas_id' => Auth::id(),
+            'id_petugas' => Auth::id(),
             'catatan'    => $request->input('catatan'),
         ]);
  
@@ -188,7 +188,7 @@ class PeminjamanController extends Controller
             ->orderBy('tanggal_pengajuan')
             ->get();
  
-        return view('peminjaman.laporan', compact('peminjaman'));
+        return view('admin.peminjaman.laporan', compact('peminjaman'));
     }
  
     private function authorizeAkses(Peminjaman $peminjaman): void
@@ -196,7 +196,7 @@ class PeminjamanController extends Controller
         $user = Auth::user();
  
         abort_if(
-            $user->role === 'peminjam' && $peminjaman->user_id !== $user->id,
+            $user->role === 'peminjam' && $peminjaman->id_user !== $user->id,
             403,
             'Anda tidak berhak mengakses data ini.'
         );

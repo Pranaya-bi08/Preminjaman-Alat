@@ -101,42 +101,48 @@ class PetugasController extends Controller
      * Proses Setujui Peminjaman
      */
     public function setujui(Request $request, $id)
-   {
-    $maxTanggalKembali = Carbon::today()->addDays(5)->toDateString();
+    {
+        $maxTanggalKembali = Carbon::today()->addDays(5)->toDateString();
 
-    $request->validate([
-        'tanggal_kembali' => ['required', 'date', 'after_or_equal:today', function ($attribute, $value, $fail) use ($maxTanggalKembali) {
-            $selected = Carbon::parse($value)->toDateString();
-            if (Carbon::parse($selected)->gt(Carbon::parse($maxTanggalKembali))) {
-                $fail('Batas pengembalian maksimal 5 hari sejak tanggal pengajuan.');
-            }
-        }],
-    ], [
-        'tanggal_kembali.required' => 'Batas pengembalian wajib diisi.',
-        'tanggal_kembali.after_or_equal' => 'Batas pengembalian tidak boleh sebelum hari ini.',
-    ]);
-
-    $peminjaman = Peminjaman::with('alat')->findOrFail($id);
-
-    if ($peminjaman->status !== 'menunggu') {
-        return back()->with('error', 'Peminjaman ini sudah diproses.');
-    }
-
-    if ($peminjaman->alat->stok < $peminjaman->jumlah) {
-        return back()->with('error', 'Stok alat tidak mencukupi.');
-    }
-
-    DB::transaction(function () use ($peminjaman, $request) {
-        $peminjaman->alat->decrement('stok', $peminjaman->jumlah);
-        $peminjaman->update([
-            'status' => 'disetujui',
-            'tanggal_kembali' => $request->tanggal_kembali,
+        $request->validate([
+            'tanggal_kembali' => ['required', 'date', 'after_or_equal:today', function ($attribute, $value, $fail) use ($maxTanggalKembali) {
+                $selected = Carbon::parse($value)->toDateString();
+                if (Carbon::parse($selected)->gt(Carbon::parse($maxTanggalKembali))) {
+                    $fail('Batas pengembalian maksimal 5 hari sejak tanggal pengajuan.');
+                }
+            }],
+        ], [
+            'tanggal_kembali.required' => 'Batas pengembalian wajib diisi.',
+            'tanggal_kembali.after_or_equal' => 'Batas pengembalian tidak boleh sebelum hari ini.',
         ]);
-    });
 
-    return back()->with('success', 'Peminjaman disetujui dengan batas kembali ' .
-        \Carbon\Carbon::parse($request->tanggal_kembali)->format('d-m-Y') . '.');
-}
+        $peminjaman = Peminjaman::findOrFail($id);
+
+        if ($peminjaman->status !== 'menunggu') {
+            return back()->with('error', 'Peminjaman ini sudah diproses.');
+        }
+
+        try {
+            DB::transaction(function () use ($peminjaman, $request) {
+                $alat = Alat::lockForUpdate()->findOrFail($peminjaman->id_alat);
+
+                if ($alat->stok < $peminjaman->jumlah) {
+                    throw new \RuntimeException('Stok alat tidak mencukupi.');
+                }
+
+                $alat->decrement('stok', $peminjaman->jumlah);
+                $peminjaman->update([
+                    'status'          => 'disetujui',
+                    'tanggal_kembali' => $request->tanggal_kembali,
+                ]);
+            });
+        } catch (\RuntimeException $e) {
+            return back()->with('error', $e->getMessage());
+        }
+
+        return back()->with('success', 'Peminjaman disetujui dengan batas kembali ' .
+            \Carbon\Carbon::parse($request->tanggal_kembali)->format('d-m-Y') . '.');
+    }
     /**
      * Proses Tolak Peminjaman
      */

@@ -62,10 +62,13 @@
                             <td>
                                 <a class="btn btn-warning" href="{{route ('alat.edit', $a->id)}}">
                                   <i class= "fas fa-edit"></i>Edit</a>
-                                <a class="btn btn-danger" 
-                                onclick="return confirm('Yakin Mau Hapus Data Ini?')"  
-                                href="{{route ('alat.destroy', $a->id)}}">
-                                <i class= "fas fa-trash"></i>Hapus</a>
+                                <form action="{{ route('alat.destroy', $a->id) }}" method="POST" class="d-inline" onsubmit="return confirm('Yakin Mau Hapus Data Ini?')">
+                                    @csrf
+                                    @method('DELETE')
+                                    <button type="submit" class="btn btn-danger">
+                                        <i class="fas fa-trash"></i>Hapus
+                                    </button>
+                                </form>
                             </td>
                             </tr>
                             @endforeach

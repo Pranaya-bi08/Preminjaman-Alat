@@ -1,175 +1,91 @@
 @extends('layouts.master')
-
 @section('content')
-<div class="row">
-    <div class="col-12">
-        <div class="d-flex justify-content-between align-items-center flex-wrap mb-4">
-            <div>
-                <h3 class="font-medium mb-1"> Peminjaman Alat</h3>
-                <p class="text-muted mb-0">Periksa pengajuan peminjam </p>
-            </div>
+
+<div class="content-wrapper">
+    <div class="content-header">
+      <div class="container-fluid">
+        <div class="row mb-2">
+          <div class="col-sm-6">
+            <h1 class="m-0">Peminjaman Alat</h1>
+          </div>
+          <div class="col-sm-6">
+            <ol class="breadcrumb float-sm-right">
+              <li class="breadcrumb-item"><a href="{{ route('admin.dashboard') }}">Home</a></li>
+              <li class="breadcrumb-item active">Peminjaman</li>
+            </ol>
+          </div>
         </div>
+      </div>
     </div>
-</div>
 
-
-@if (session('success'))
-    <div class="alert alert-success alert-dismissible fade show" role="alert">
-        <i class="mdi mdi-check-circle mr-2"></i>{{ session('success') }}
-        <button type="button" class="close" data-dismiss="alert">&times;</button>
-    </div>
-@endif
-
-@if (session('error'))
-    <div class="alert alert-danger alert-dismissible fade show" role="alert">
-        <i class="mdi mdi-alert-circle mr-2"></i>{{ session('error') }}
-        <button type="button" class="close" data-dismiss="alert">&times;</button>
-    </div>
-@endif
-
-{{-- ================= RINGKASAN STATUS ================= --}}
-<div class="row">
-    <div class="col-md-4 col-sm-6">
-        <div class="card">
-            <div class="card-body">
-                <div class="d-flex align-items-center">
-                    <div>
-                        <h2 class="m-b-0 font-light">{{ $peminjaman->where('status', 'menunggu')->count() }}</h2>
-                        <h6 class="text-muted">Menunggu</h6>
-                    </div>
-                    <div class="ml-auto">
-                        <div class="btn btn-circle btn-outline-secondary">
-                            <i class="mdi mdi-clock-outline font-20"></i>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-    <div class="col-md-4 col-sm-6">
-        <div class="card">
-            <div class="card-body">
-                <div class="d-flex align-items-center">
-                    <div>
-                        <h2 class="m-b-0 font-light">{{ $peminjaman->where('status', 'disetujui')->count() }}</h2>
-                        <h6 class="text-muted">Disetujui</h6>
-                    </div>
-                    <div class="ml-auto">
-                        <div class="btn btn-circle btn-outline-success">
-                            <i class="mdi mdi-check font-20"></i>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-    <div class="col-md-4 col-sm-6">
-        <div class="card">
-            <div class="card-body">
-                <div class="d-flex align-items-center">
-                    <div>
-                        <h2 class="m-b-0 font-light">{{ $peminjaman->where('status', 'ditolak')->count() }}</h2>
-                        <h6 class="text-muted">Ditolak</h6>
-                    </div>
-                    <div class="ml-auto">
-                        <div class="btn btn-circle btn-outline-danger">
-                            <i class="mdi mdi-close font-20"></i>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
-
-
-<div class="row">
-    <div class="col-12">
-        <div class="card">
-            <div class="card-body">
-                <h4 class="card-title">Daftar Pengajuan</h4>
-                <p class="card-subtitle">Semua pengajuan peminjaman alat dari peminjam.</p>
-
-                <div class="table-responsive">
-                    <table id="peminjamanTable" class="table table-striped table-bordered">
+    <section class="content">
+        <div class="row">
+          <div class="col-lg-12">
+             <div class="card">
+              <div class="card-header">
+                @if (session('success'))
+                  <div class="alert alert-success">
+                      {{ session('success') }}
+                  </div>
+                @endif
+                @if (session('error'))
+                  <div class="alert alert-danger">
+                      {{ session('error') }}
+                  </div>
+                @endif
+                <h3>Tabel Peminjaman</h3>
+              </div>
+              <div class="card-body">
+                    <table class="table table-bordered">
                         <thead>
                             <tr>
-                                <th>#</th>
-                                <th>Alat</th>
-                                <th>Kategori</th>
+                                <th>Id</th>
                                 <th>Peminjam</th>
-                                <th>Diajukan</th>
+                                <th>Alat</th>
+                                <th>Jumlah</th>
+                                <th>Tanggal Pengajuan</th>
+                                <th>Tanggal Kembali</th>
                                 <th>Status</th>
-                                <th>Catatan</th>
-                                <th class="text-right">Aksi</th>
+                                <th>Action</th>
                             </tr>
                         </thead>
                         <tbody>
-                            @forelse ($peminjaman as $item)
-                                <tr>
-                                    <td>{{ $loop->iteration }}</td>
-                                    <td>
-                                        <span class="font-weight-bold">{{ $item->alat->nama_alat }}</span>
-                                    </td>
-                                    <td>{{ $item->alat->kategori->nama_kategori ?? '-' }}</td>
-                                    <td>{{ $item->peminjam->name }}</td>
-                                    <td>{{ \Carbon\Carbon::parse($item->tanggal_pengajuan)->translatedFormat('j M Y') }}</td>
-                                    <td>
-                                        @switch($item->status)
-                                            @case('menunggu')
-                                                <span class="badge badge-warning">Menunggu</span>
-                                                @break
-                                            @case('disetujui')
-                                                <span class="badge badge-success">Disetujui</span>
-                                                @break
-                                            @case('ditolak')
-                                                <span class="badge badge-danger">Ditolak</span>
-                                                @break
-                                        @endswitch
-                                    </td>
-                                    <td>{{ $item->catatan ?? '-' }}</td>
-                                    <td>
-                        <a href="{{ route('kategori.edit', $item->id) }}" class="btn btn-sm btn-warning">
-                            Edit
-                        </a>
-
-                        <form action="{{ route('kategori.destroy', $item->id) }}" method="POST" class="d-inline" onsubmit="return confirm('Yakin ingin menghapus kategori ini?')">
-                            @csrf
-                            @method('DELETE')
-                            <button type="submit" class="btn btn-sm btn-danger">
-                                Hapus
-                            </button>
-                        </form>
-                    </td>
-                                </tr>
-                            @empty
-                                <tr>
-                                    <td colspan="8" class="text-center text-muted py-4">
-                                        Belum ada pengajuan peminjaman alat.
-                                    </td>
-                                </tr>
-                            @endforelse
+                            @foreach ($peminjaman as $p)
+                            <tr>
+                                <td>{{ $loop->iteration }}</td>
+                                <td>{{ $p->peminjam->name }}</td>
+                                <td>{{ $p->alat->nama_alat }}</td>
+                                <td>{{ $p->jumlah }}</td>
+                                <td>{{ $p->tanggal_pengajuan }}</td>
+                                <td>{{ $p->tanggal_kembali ?? '-' }}</td>
+                                <td>
+                                    @if ($p->status == 'menunggu')
+                                        <span class="badge badge-warning">Menunggu</span>
+                                    @elseif ($p->status == 'disetujui')
+                                        <span class="badge badge-success">Disetujui</span>
+                                    @elseif ($p->status == 'ditolak')
+                                        <span class="badge badge-danger">Ditolak</span>
+                                    @endif
+                                </td>
+                                <td>
+                                    <a class="btn btn-warning" href="{{ route('peminjaman.edit', $p->id) }}">
+                                      <i class="fas fa-edit"></i>Edit</a>
+                                    <form action="{{ route('peminjaman.destroy', $p->id) }}" method="POST" class="d-inline" onsubmit="return confirm('Yakin Mau Hapus Data Ini?')">
+                                        @csrf
+                                        @method('DELETE')
+                                        <button type="submit" class="btn btn-danger">
+                                            <i class="fas fa-trash"></i>Hapus
+                                        </button>
+                                    </form>
+                                </td>
+                            </tr>
+                            @endforeach
                         </tbody>
                     </table>
-                </div>
-            </div>
+              </div>
+             </div>
+          </div>
+        </section>
         </div>
-    </div>
-</div>
-@endsection
 
-@push('scripts')
-<script>
-    $(document).ready(function () {
-        $('#peminjamanTable').DataTable({
-            "order": [],
-            "language": {
-                "search": "Cari:",
-                "lengthMenu": "Tampilkan _MENU_ data",
-                "info": "Menampilkan _START_ - _END_ dari _TOTAL_ data",
-                "paginate": { "previous": "Sebelumnya", "next": "Selanjutnya" }
-            }
-        });
-    });
-</script>
-@endpush
+@endsection

@@ -32,7 +32,7 @@ Route::middleware(['auth'])->group(function() {
        Route::post('/user/simpan', [UserController::class, 'store'])->name('user.store');
        Route::get('/user/edit{id}', [UserController::class, 'edit'])->name('user.edit');
        Route::post('/user/update{id}', [UserController::class, 'update'])->name('user.update');
-       Route::get('/user/hapus{id}', [UserController::class, 'destroy'])->name('user.destroy');
+       Route::delete('/user/hapus/{id}', [UserController::class, 'destroy'])->name('user.destroy');
 
 
        Route::get('/alat', [AlatController::class,'index'])->name('alat.index');
@@ -40,7 +40,7 @@ Route::middleware(['auth'])->group(function() {
        Route::post('/alat/simpan', [AlatController::class,'store'])->name('alat.store');
        Route::get('/alat/edit/{id}', [AlatController::class,'edit'])->name('alat.edit');
        Route::post('/alat/update/{id}', [AlatController::class,'update'])->name('alat.update');
-       Route::get('/alat/hapus{id}', [AlatController::class,'destroy'])->name('alat.destroy');
+       Route::delete('/alat/hapus/{id}', [AlatController::class,'destroy'])->name('alat.destroy');
 
        Route::get('/kategori', [KategoriController::class, 'index'])->name('kategori.index');
        Route::get('/kategori/tambah', [KategoriController::class, 'create'])->name('kategori.create');
@@ -50,6 +50,7 @@ Route::middleware(['auth'])->group(function() {
        Route::delete('/kategori/hapus/{kategori}', [KategoriController::class, 'destroy'])->name('kategori.destroy');
 
        Route::get('/peminjaman', [PeminjamanController::class,'index'])->name('peminjaman.index');
+        Route::get('peminjaman/laporan', [PeminjamanController::class, 'laporan'])->name('peminjaman.laporan');
         Route::get('peminjaman/{peminjaman}/edit', [PeminjamanController::class, 'edit'])->name('peminjaman.edit');
         Route::post('peminjaman/{peminjaman}', [PeminjamanController::class, 'update'])->name('peminjaman.update');
         Route::get('peminjaman/{peminjaman}', [PeminjamanController::class, 'show'])->name('peminjaman.show');
@@ -77,9 +78,9 @@ Route::middleware(['auth'])->group(function() {
        Route::get('/petugas/laporan/cetak', [PetugasController::class, 'cetakLaporan'])->name('petugas.laporan.cetak');
 
        // Compatibility routes
-       Route::post('peminjaman/{peminjaman}/setujui', [PetugasController::class, 'setujui'])->name('peminjaman.setujui');
-       Route::post('peminjaman/{peminjaman}/tolak', [PetugasController::class, 'tolak'])->name('peminjaman.tolak');
-       Route::get('laporan/peminjaman', [PetugasController::class, 'laporan'])->name('peminjaman.laporan');
+       Route::post('peminjaman/{id}/setujui', [PetugasController::class, 'setujui'])->name('peminjaman.setujui');
+       Route::post('peminjaman/{id}/tolak', [PetugasController::class, 'tolak'])->name('peminjaman.tolak');
+       Route::get('laporan/peminjaman', [PetugasController::class, 'laporan'])->name('petugas.laporan.peminjaman');
    });
 
    Route::middleware(['auth', 'role:peminjam'])->group(function () {

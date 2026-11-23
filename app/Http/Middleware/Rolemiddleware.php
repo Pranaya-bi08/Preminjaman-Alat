@@ -21,7 +21,7 @@ class RoleMiddleware
             return redirect()->route('login');
         }
 
-        if (!in_Array(Auth::user()->role, $roles, true  )) {
+        if (!in_array(Auth::user()->role, $roles, true)) {
             abort(403, 'Anda tidak punya akses ke halaman ini.');
         }
 
